@@ -41,6 +41,7 @@ class Node:
     def __init__(self):
         self.__data = None
         self.__next = None
+        self.__prev = None
 
     def get_data(self):
         return self.__data
@@ -54,6 +55,11 @@ class Node:
     def set_next(self, next_elm):
         self.__next = next_elm
 
+    def get_prev(self):
+        return self.__prev
+
+    def set_prev(self, prev_elm):
+        self.__prev = prev_elm
 
 class SingleLinkedList:
     def __init__(self, init_list=None):
@@ -89,10 +95,10 @@ class SingleLinkedList:
         count = 0
         cur = self.head
         while cur is not None:
-            cur = cur.get_next()
-            count += 1
             if count == idx:
                 return cur
+            cur = cur.get_next()
+            count += 1
         raise UnboundLocalError("Error: Out of bounds exception")
 
     def append_node(self, data):
@@ -148,7 +154,101 @@ class SingleLinkedList:
 
 
 class DoubleLinkedList:
-    pass
+    def __init__(self, init_list=None):
+        self.head = Node()
+        self.tail = self.head
+        self.len = 0
+        for itm in init_list:
+            self.append_node(itm)
+
+    def set_node_data(self, data, idx):
+        cur = self.get_node(idx)
+        cur.set_data(data)
+
+    def get_node_data(self, idx):
+        cur = self.get_node(idx)
+        return cur.get_data()
+
+    def get_node(self, idx):
+        cur = self.get_head()
+        count = 0
+        while cur is not None:
+            if count == idx:
+                return cur
+            cur = cur.get_next()
+            count += 1
+        raise UnboundLocalError("Error: Out of bounds exception")
+
+    def get_head(self):
+        return self.head
+
+    def get_tail(self):
+        return self.tail
+
+    def append_node(self, data):
+        if self.len == 0:
+            # special case, empty list
+            self.set_node_data(data, 0)
+            self.len += 1
+        elif self.len == 1:
+            # special case, tail and head are the same
+            new_node = Node()
+            new_node.set_data(data)
+            new_node.set_prev(self.head)
+            self.head.set_next(new_node)
+            self.tail = new_node
+            self.len += 1
+        else:
+            # normal case, tail and head are seperate nodes
+            new_node = Node()
+            new_node.set_data(data)
+            new_node.set_prev(self.tail)
+            self.tail.set_next(new_node)
+            self.tail = new_node
+            self.len += 1
+
+    def prepend_node(self, data):
+        tmp = self.head
+        self.head = Node()
+        self.head.set_data(data)
+        self.head.set_next(tmp)
+        tmp.set_prev(self.head)
+        self.len += 1
+
+    def insert_node(self, data, idx):
+        cur = self.get_node(idx)
+        left = cur.get_prev()
+        new_node = Node()
+        new_node.set_data(data)
+        if left is not None:
+            left.set_next(new_node)
+            new_node.set_prev(left)
+        cur.set_prev(new_node)
+        new_node.set_next(cur)
+        self.len += 1
+
+    def delete_node(self, idx):
+        cur = self.get_node(idx)
+        left = cur.get_prev()
+        right = cur.get_next()
+        if left is not None:
+            left.set_next(right)
+            if right is not None:
+                right.set_prev(left)
+        else:
+            self.head = right
+        self.len -= 1
+
+    def print_list(self):
+        cur = self.head
+        while cur is not None:
+            if cur == self.head:
+                print("[{" + str(cur.get_data()) + "}, ", end="")
+            elif cur == self.tail:
+                print("{" + str(cur.get_data()) + "}]")
+            else:
+                print("{" + str(cur.get_data()) + "}, ", end="")
+            cur = cur.get_next()
 
 
 class BinaryTree:
@@ -168,10 +268,10 @@ def single_link_tester(data):
     arr.print_list()
     arr.delete_node(3)
     arr.print_list()
-    arr.insert_node(42, 5)  # will function like append
+    arr.insert_node(42, 4)
     arr.print_list()
 
-    for i in range(42):
+    for i in range(22):
         arr.prepend_node(i)
     arr.print_list()
 
@@ -180,9 +280,24 @@ def single_link_tester(data):
     arr.print_list()
 
 
+def double_link_tester(data):
+    arr = DoubleLinkedList(data)
+    arr.print_list()
+    arr.delete_node(0)
+    arr.print_list()
+    arr.prepend_node(12)
+    arr.print_list()
+    arr.insert_node(24, 3)
+    arr.print_list()
+    arr.delete_node(3)
+    arr.print_list()
+
+
 def main():
     test_array = [4, 7, 1, 3, 5, 6]
     single_link_tester(test_array)
+    print("single-test finished")
+    double_link_tester(test_array)
 
 
 main()
